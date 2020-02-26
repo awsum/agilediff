@@ -4,6 +4,7 @@ import (
 	"golang.org/x/net/html"
 )
 
+// IsSameDepth matches nodes with same DOM depth as golden node
 type IsSameDepth struct {
 	golden int
 }

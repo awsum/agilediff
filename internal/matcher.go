@@ -52,10 +52,17 @@ func (m *Matcher) Filter(sample io.Reader) ([]Candidate, error) {
 	for _, node := range everyone.Nodes {
 		candidates = append(candidates, m.report(node))
 	}
+
+	if len(candidates) == 0 {
+		return nil, nil
+	}
+
+	// pretty printing stuff
+	// sort by desc score
 	sort.Slice(candidates, func(i, j int) bool {
 		return candidates[i].Score > candidates[j].Score
 	})
-	// FIXME: len 0
+	// return only candidates head with same scores
 	trimAt := 1
 	for ; trimAt < len(candidates); trimAt++ {
 		if candidates[trimAt].Score != candidates[trimAt-1].Score {
@@ -66,6 +73,9 @@ func (m *Matcher) Filter(sample io.Reader) ([]Candidate, error) {
 }
 
 func (m *Matcher) report(node *html.Node) Candidate {
+	// there might be different approaches to state and candidate state mutation
+	// in particular, everything I can think of has own tradeoffs.
+	// so idea is to keep all writes explicitly in the same place
 	candidate := Candidate{
 		Score: 1,
 		node:  node,

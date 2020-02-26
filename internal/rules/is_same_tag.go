@@ -2,6 +2,7 @@ package rules
 
 import "golang.org/x/net/html"
 
+// IsSameTag matches nodes with same HTML tag (kinda) as golden node
 type IsSameTag struct {
 	golden string
 }

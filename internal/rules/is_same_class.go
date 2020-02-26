@@ -2,6 +2,7 @@ package rules
 
 import "golang.org/x/net/html"
 
+// IsSameClass matches nodes with same class attribute value as in golden node
 type IsSameClass struct {
 	golden string
 }

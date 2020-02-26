@@ -16,7 +16,7 @@ type Candidate struct {
 	node   *html.Node
 }
 
-// Fail add test case as failed
+// Fail add test case as failed.
 func (c *Candidate) Fail(rule string) {
 	c.Failed = append(c.Failed, rule)
 }

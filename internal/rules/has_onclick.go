@@ -2,6 +2,7 @@ package rules
 
 import "golang.org/x/net/html"
 
+// HasOnclick matches nodes whose onclick attribute existense is the same as for golden one
 type HasOnclick struct {
 	golden bool
 }

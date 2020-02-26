@@ -12,16 +12,19 @@ import (
 )
 
 func main() {
+	id := flag.String("id", "make-everything-ok-button", "")
+
 	flag.Parse()
+
 	if flag.NArg() != 2 {
-		log.Fatalf("usage: agilediff <original> <sample>\n")
+		log.Fatalf("usage: agilediff [-id=make-everything-ok-button] <original> <sample>\n")
 	}
 
 	original := reader(flag.Arg(0))
 	sample := reader(flag.Arg(1))
-	// no defers since everything is fatal
+	// no defers since everything is readonly, bound and fatal
 
-	matcher, err := internal.NewMatcher(original, "make-everything-ok-button")
+	matcher, err := internal.NewMatcher(original, *id)
 	if err != nil {
 		log.Fatalf("failed to init matcher: %v", err)
 	}
@@ -43,8 +46,12 @@ func main() {
 	if err != nil {
 		panic(fmt.Sprintf("invalid template: %v", err))
 	}
+
 	for _, candidate := range candidates {
-		template.Execute(os.Stdout, &candidate)
+		err := template.Execute(os.Stdout, &candidate)
+		if err != nil {
+			log.Fatalf("failed to render template: %v", err)
+		}
 	}
 }
 
