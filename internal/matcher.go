@@ -13,10 +13,7 @@ import (
 // Matcher high level interface for node filtering, should not expose
 // implementation details
 type Matcher struct {
-	rules      []Rule
-	tag        string
-	depth      int
-	hasOnclick bool
+	rules map[string]Rule
 }
 
 func NewMatcher(input io.Reader, id string) (*Matcher, error) {
@@ -32,10 +29,11 @@ func NewMatcher(input io.Reader, id string) (*Matcher, error) {
 	node := selection.Nodes[0]
 
 	// init default rules
-	rules := []Rule{
-		rules.NewHasOnclick(node),
-		rules.NewIsTag(node),
-		rules.NewIsSameDepth(node),
+	rules := map[string]Rule{
+		"has onclick attribute": rules.NewHasOnclick(node),
+		"same html tag":         rules.NewIsSameTag(node),
+		"same dom depth":        rules.NewIsSameDepth(node),
+		"same class":            rules.NewIsSameClass(node),
 	}
 
 	return &Matcher{
@@ -52,10 +50,7 @@ func (m *Matcher) Filter(sample io.Reader) ([]Candidate, error) {
 	everyone := doc.Find("*")
 	candidates := make([]Candidate, 0, len(everyone.Nodes))
 	for _, node := range everyone.Nodes {
-		candidates = append(candidates, Candidate{
-			Score: m.score(node),
-			node:  node,
-		})
+		candidates = append(candidates, m.report(node))
 	}
 	sort.Slice(candidates, func(i, j int) bool {
 		return candidates[i].Score > candidates[j].Score
@@ -70,12 +65,18 @@ func (m *Matcher) Filter(sample io.Reader) ([]Candidate, error) {
 	return candidates[:trimAt], nil
 }
 
-func (m *Matcher) score(node *html.Node) float64 {
-	score := 1.
-	for _, rule := range m.rules {
+func (m *Matcher) report(node *html.Node) Candidate {
+	candidate := Candidate{
+		Score: 1,
+		node:  node,
+	}
+	for name, rule := range m.rules {
 		if !rule.Match(node) {
-			score *= 0.75
+			candidate.Score *= 0.75
+			candidate.Fail(name)
+		} else {
+			candidate.Pass(name)
 		}
 	}
-	return score
+	return candidate
 }

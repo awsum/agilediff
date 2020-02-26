@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"text/template"
 
 	"github.com/awsum/agilediff/internal"
 )
@@ -30,8 +31,20 @@ func main() {
 		log.Fatalf("failed to filter sample: %v", err)
 	}
 
+	template, err := template.New("candidate").Parse(`
+{{ .Path }}
+{{- range $rule := .Passed }}
+	V {{ $rule }}
+{{- end }}
+{{- range $rule := .Failed }}
+	X {{ $rule }}
+{{- end }}
+`)
+	if err != nil {
+		panic(fmt.Sprintf("invalid template: %v", err))
+	}
 	for _, candidate := range candidates {
-		fmt.Println(candidate)
+		template.Execute(os.Stdout, &candidate)
 	}
 }
 
